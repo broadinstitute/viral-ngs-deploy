@@ -87,3 +87,19 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+VERSION
+
+# Mac OSX
+.DS_Store
+
+
+virtualized/data/Snakefile
+
+virtualized/data/config.json
+virtualized/data/config.yaml
+
+virtualized/data/viral-ngs/
+
+virtualized/.vagrant/
+
