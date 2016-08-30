@@ -103,3 +103,5 @@ virtualized/data/viral-ngs/
 
 virtualized/.vagrant/
 
+*.retry
+
