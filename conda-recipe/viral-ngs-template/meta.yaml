@@ -1,6 +1,6 @@
 package:
   name: viral-ngs
-  version: 1.10.1
+  version: {{PKG_VERSION}}
 
 about:
   home: https://github.com/broadinstitute/viral-ngs
@@ -8,12 +8,12 @@ about:
   summary: A set of scripts and tools for the analysis of viral NGS data
 
 source:
-  fn: viral-ngs-v1.10.1.zip
-  url: https://github.com/broadinstitute/viral-ngs/archive/v1.10.1.zip
-  md5: b6870d34f2ca2f9e4d16907d7df59bf2
+  fn: viral-ngs-v{{PKG_VERSION}}.zip
+  url: https://github.com/broadinstitute/viral-ngs/archive/v{{PKG_VERSION}}.zip
+  #md5: b6870d34f2ca2f9e4d16907d7df59bf2
 
 build:
-    number: 2
+    number: 0
     rpaths:
         - lib/
         - lib//
