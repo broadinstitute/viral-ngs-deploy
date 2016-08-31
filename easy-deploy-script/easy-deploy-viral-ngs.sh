@@ -45,9 +45,7 @@ MINICONDA_PATH="$SCRIPTPATH/$CONTAINING_DIR/$MINICONDA_DIR"
     printf '%s' "${PWD%/}/")$(basename -- "$0") != "${.sh.file}" ]] ||
  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && sourced=1 || sourced=0
 
-# TODO: check that we are on a machine with sufficient RAM
-
-current_prefix_length=$(echo $MINICONDA_PATH | wc -c)
+current_prefix_length=$(echo $MINICONDA_PATH | wc -c | xargs) # xargs trims whitespace
 if [ $current_prefix_length -ge $CONDA_PREFIX_LENGTH_LIMIT ]; then
     echo "ERROR: The conda path to be created by this script is too long to work with conda ($current_prefix_length characters):"
     echo "$MINICONDA_PATH"
@@ -220,7 +218,7 @@ function activate_env(){
 }
 
 function print_usage(){
-    echo "Usage: $(basename $SCRIPT) {load,create-project,setup,upgrade}"
+    echo "Usage: $(basename $SCRIPT) {load,create-project,setup|setup-py2,upgrade}"
 }
 
 function symlink_viral_ngs(){
@@ -277,8 +275,8 @@ if [ $# -eq 0 ]; then
     fi
 else
     case "$1" in
-       "setup")
-            if [ $# -eq 1 ]; then
+       "setup"|"setup-py2")
+            if [ $# -eq 1 -o $# -eq 2 ]; then
                 if [[ $sourced -eq 1 ]]; then
                     echo "ABORTING. $(basename $SCRIPT) must not be sourced during setup"
                     echo "Usage: $(basename $SCRIPT) setup"
@@ -296,10 +294,26 @@ else
                     install_miniconda
 
                     if [ ! -d "$VIRAL_CONDA_ENV_PATH" ]; then
-                        conda create -c bioconda -y -p $VIRAL_CONDA_ENV_PATH viral-ngs
+                        # provide an option to use Python 2 in the conda environment
+                        if [ "$1" == "setup-py2" ]; then
+                            conda create -c bioconda -y -p $VIRAL_CONDA_ENV_PATH python=2
+                        else
+                            conda create -c bioconda -y -p $VIRAL_CONDA_ENV_PATH python=3
+                        fi
+                        
+                        # provide an avenue to specify a package path
+                        if [ $# -eq 2 ]; then
+                            conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH $2
+                        elif [ $# -eq 1 ]; then
+                            conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH viral-ngs
+                        fi
+
                     else
                         echo "$VIRAL_CONDA_ENV_PATH/ already exists. Skipping conda env setup."
                     fi
+
+                    echo "exiting.....$1"
+                    exit 0
 
                     activate_env
 
