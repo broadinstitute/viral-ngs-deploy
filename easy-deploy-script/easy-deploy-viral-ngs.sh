@@ -45,7 +45,7 @@ MINICONDA_PATH="$SCRIPTPATH/$CONTAINING_DIR/$MINICONDA_DIR"
     printf '%s' "${PWD%/}/")$(basename -- "$0") != "${.sh.file}" ]] ||
  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && sourced=1 || sourced=0
 
-current_prefix_length=$(echo $MINICONDA_PATH | wc -c | xargs) # xargs trims whitespace
+current_prefix_length=$(echo $MINICONDA_PATH | wc -c | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}') # sed trims whitespace
 if [ $current_prefix_length -ge $CONDA_PREFIX_LENGTH_LIMIT ]; then
     echo "ERROR: The conda path to be created by this script is too long to work with conda ($current_prefix_length characters):"
     echo "$MINICONDA_PATH"
