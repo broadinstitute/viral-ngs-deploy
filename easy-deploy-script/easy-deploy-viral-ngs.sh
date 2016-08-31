@@ -148,6 +148,7 @@ function install_miniconda(){
     if [ -d "$MINICONDA_PATH/bin" ]; then
         prepend_miniconda
         conda install -q -y conda==4.0.10
+        conda install -q -y conda-build>=1.7.1
     else
         echo "It looks like the Miniconda installation failed"
         exit 1
@@ -301,9 +302,15 @@ else
                             conda create -c bioconda -y -p $VIRAL_CONDA_ENV_PATH python=3
                         fi
                         
-                        # provide an avenue to specify a package path
+                        # provide an avenue to specify a package path, or to use a previously-built local package
                         if [ $# -eq 2 ]; then
-                            conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH $2
+                            if [ "$2" == "--use-local" ]; then
+                                conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH --use-local viral-ngs
+                                echo "using local...."
+                                exit 0
+                            else
+                                conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH $2
+                            fi
                         elif [ $# -eq 1 ]; then
                             conda install -c bioconda -y -p $VIRAL_CONDA_ENV_PATH viral-ngs
                         fi
