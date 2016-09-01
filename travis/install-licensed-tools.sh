@@ -11,6 +11,7 @@ if [ ! -d $GATK_PATH ]; then
     pwd
     wget https://storage.googleapis.com/sabeti-public/software_testing/GenomeAnalysisTK-3.6.tar.gz.enc
     openssl aes-256-cbc -d -k "$BUNDLE_SECRET" -in GenomeAnalysisTK-3.6.tar.gz.enc -out GenomeAnalysisTK-3.6.tar.gz
+    md5sum GenomeAnalysisTK-3.6.tar.gz
     tar -xzpvf GenomeAnalysisTK-3.6.tar.gz -C "$CACHE_DIR"
 
   fi
