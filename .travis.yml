@@ -8,16 +8,16 @@ env:
   - TEST_EASY_INSTALL=true
   - TEST_EASY_INSTALL=false
 
-matrix:
-    include:
-        - os: linux
-          dist: trusty
-          sudo: required
-          services:
-            - docker
-          env:
-            - TEST_DOCKER=true
-            - TEST_EASY_INSTALL=false
+# matrix:
+#     include:
+#         - os: linux
+#           dist: trusty
+#           sudo: required
+#           services:
+#             - docker
+#           env:
+#             - TEST_DOCKER=true
+#             - TEST_EASY_INSTALL=false
           
 #        - os: osx
 #          language: generic
