@@ -47,9 +47,12 @@ RUN ln -s /user-data /home/$DOCKER_USER/data
 
 # download and use the viral-ngs easy deploy script to install viral-ngs
 #RUN curl -LO https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh
-ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER
-RUN chmod a+x easy-deploy-viral-ngs.sh
-RUN bash easy-deploy-viral-ngs.sh setup
+USER root
+ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER/easy-deploy-viral-ngs.sh
+RUN chmod +x ./easy-deploy-viral-ngs.sh
+RUN chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
+USER $DOCKER_USER
+RUN bash ./easy-deploy-viral-ngs.sh setup
 
 # source the viral-ngs conda environment in the .bashrc file so all
 # commands are always available for a bash seshion    

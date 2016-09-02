@@ -103,5 +103,7 @@ virtualized/data/viral-ngs/
 
 virtualized/.vagrant/
 
+docker/easy-deploy-script/
+
 *.retry
 
