@@ -1,10 +1,10 @@
 set -e
 
-if [ ! -z "$TEST_EASY_INSTALL" ]; then
+if [ "$TEST_EASY_INSTALL" == "true" ]; then
     cp ./easy-deploy-script/easy-deploy-viral-ngs.sh /tmp/easy-deploy-viral-ngs.sh
     /tmp/easy-deploy-viral-ngs.sh setup
 fi
 
-if [ ! -z "$TEST_DOCKER" ]; then
+if [ "$TEST_DOCKER" == "true" ]; then
     docker build --rm ./docker/
 fi
