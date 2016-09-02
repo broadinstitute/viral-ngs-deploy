@@ -6,6 +6,7 @@ if [ "$TEST_EASY_INSTALL" == "true" ]; then
 fi
 
 if [ "$TEST_DOCKER" == "true" ]; then
-    ln -s ./easy-deploy-script ./docker/easy-deploy-script
+    rm ./docker/easy-deploy-script # remove symlink if present
+    cp -r ./easy-deploy-script ./docker/
     docker build --rm ./docker/
 fi
