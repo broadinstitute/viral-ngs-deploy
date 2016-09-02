@@ -17,11 +17,11 @@ env:
     #- NOVOALIGN_PATH="$CACHE_DIR/bin_bundles/novocraft_v3"
     - PYTHONIOENCODING=UTF8
     - secure: bfoT9UMox1fdD3mMsULV56ax1L1xpnq68I/SQFvH5dpoFWWTjD04NU8INut9XYBEbVswWtBSsir69qb3Va/zuPYooOar9Zn+44tBZJxsnhnjxBFiC78iThYIMkhYIC4l6uAIpVyLxwZK4Q07HP4V235vw7EM+9BQ2SKRZfQq5YCoDVAK96PSRuHgLYbPLnM2dcv4pWpelrCPFPlOj7rUxk2i4ZwTYGdM46gf9h0blFF9oTEXd1lRdele7zCYB4/KzobW/jrohp7DrIhYyT5h5d7zCNZOy0Y5cZgeM/GRAM8lABQVkIFjImDor4g/f4Puh2g5j9V3xTsiGPJKPe0hUag1dNIok+XO9/ebbJ+W3Tx/VjBMNaLzhBiUqoBjswVz0V8wmD1EywV6yZsDqdxkABdQ88qcRplYtU/JIoEPucjQ7jePjWal0Ifd19R8WNdoHh67/xyaEh8g6zxcADT92slyyKJpnBUy28B5QoDuqudJGX+gueoNeMVvO5dM+DLO4JFzgcafZ06fIWeOpdPTty3D0BD82Zsvq5BUxPJz8lGE+XYoFJvmH3sNzI6ojOLzBdYkwmIyTnPlTFUhclbJOB0ncQHE8sVY9u4J7rz/cLIKY+jWBnZ9ySQoByKhYMZrmUnpuVF7Fg4tSmOFbuvGMFuitm1TdNqHs+vxtpxiFOg=
-
-matrix:
+  
   - TEST_EASY_INSTALL=true
   - TEST_EASY_INSTALL=false
 
+matrix:
   include:
     - os: linux
       dist: trusty
