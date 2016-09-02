@@ -1,5 +1,9 @@
 language: python
 
+env:
+  - TEST_EASY_INSTALL=true
+  - TEST_EASY_INSTALL=false
+
 matrix:
     include:
         - os: linux
@@ -9,12 +13,11 @@ matrix:
             - docker
           env:
             - TEST_DOCKER=true
+            - TEST_EASY_INSTALL=false
         - os: linux
           sudo: false
           python: 3.5
-          env:
-            - TEST_EASY_INSTALL=true
-            - TEST_EASY_INSTALL=false
+          
 #        - os: osx
 #          language: generic
 #          env:
