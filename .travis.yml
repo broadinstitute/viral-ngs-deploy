@@ -1,3 +1,8 @@
+sudo: required
+
+services:
+  - docker
+
 language: python
 
 matrix:
@@ -7,11 +12,13 @@ matrix:
           python: 2.7
           env:
             - TEST_EASY_INSTALL=true
+            - TEST_DOCKER=true
         - os: linux
           sudo: false
           python: 3.5
           env:
             - TEST_EASY_INSTALL=true
+            - TEST_DOCKER=true
 #        - os: osx
 #          language: generic
 #          env:
