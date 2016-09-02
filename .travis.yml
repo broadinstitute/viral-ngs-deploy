@@ -1,9 +1,5 @@
 language: python
 
-env:
-  - TEST_EASY_INSTALL=true
-  - TEST_EASY_INSTALL=false
-
 matrix:
     include:
         - os: linux
@@ -17,6 +13,10 @@ matrix:
         - os: linux
           sudo: false
           python: 3.5
+          env:
+            - TEST_EASY_INSTALL=true TEST_DOCKER=false
+            - TEST_EASY_INSTALL=false TEST_DOCKER=false
+
           
 #        - os: osx
 #          language: generic
