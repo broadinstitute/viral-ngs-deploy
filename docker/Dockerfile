@@ -47,7 +47,7 @@ RUN ln -s /user-data /home/$DOCKER_USER/data
 
 # download and use the viral-ngs easy deploy script to install viral-ngs
 #RUN curl -LO https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh
-ADD ../easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER
+ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER
 RUN chmod a+x easy-deploy-viral-ngs.sh
 RUN bash easy-deploy-viral-ngs.sh setup
 
