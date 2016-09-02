@@ -6,5 +6,6 @@ if [ "$TEST_EASY_INSTALL" == "true" ]; then
 fi
 
 if [ "$TEST_DOCKER" == "true" ]; then
+    ln -s ./easy-deploy-script ./docker/easy-deploy-script
     docker build --rm ./docker/
 fi
