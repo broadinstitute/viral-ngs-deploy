@@ -33,6 +33,11 @@ matrix:
       env:
         - TEST_DOCKER=true
         - TEST_EASY_INSTALL=false
+      addons:
+        apt:
+          packages:
+            - libffi-dev 
+            - libssl-dev
           
 #        - os: osx
 #          language: generic
