@@ -14,7 +14,9 @@ By default, the pipeline will install a single-threaded version of [Novoalign](h
 
 ### To build
   Navigate to the directory containing the `Dockerfile`, then run:
-  `docker build --rm .`
+  `tar -czh . | docker build --rm -`
+  The `tar` is necessary because Docker cannot dereference symlinks, and by tarring the directory, symlinks
+  to files in higher filesystem levels can be used.
   
 ### To run
 Download licensed copies of GATK and Novoalign to the host machine (for Linux-64), and run:

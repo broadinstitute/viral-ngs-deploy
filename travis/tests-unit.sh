@@ -5,11 +5,13 @@ if [ "$TEST_EASY_INSTALL" == "true" ]; then
     /tmp/easy-deploy-viral-ngs.sh setup
 fi
 
-if [ "$TEST_DOCKER" == "true" ]; then
-    # remove symlink if present
-    rm ./docker/easy-deploy-script 
-    # copy in easy deploy script since Docker can't add things
-    # from higher in the filesystem hierarchy
-    cp -r ./easy-deploy-script ./docker/ 
-    docker build --rm ./docker/
+if [ "$TEST_ANSIBLE" == "true" ]; then
+    ansible-playbook ./ansible/viral-ngs-playbook.yml -i "localhost," --connection=local --sudo
 fi
+
+if [ "$TEST_DOCKER" == "true" ]; then
+    # tar contents to dereference symlinks
+    cd ./docker
+    tar -czh . | docker build --rm -
+fi
+
