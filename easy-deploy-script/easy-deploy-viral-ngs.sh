@@ -148,7 +148,7 @@ function install_miniconda(){
     if [ -d "$MINICONDA_PATH/bin" ]; then
         prepend_miniconda
         conda install -q -y conda==4.0.10
-        conda install -q -y conda-build>=1.7.1
+        conda install -q -y conda-build==1.7.1
     else
         echo "It looks like the Miniconda installation failed"
         exit 1
