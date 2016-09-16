@@ -320,9 +320,6 @@ else
                         echo "$VIRAL_CONDA_ENV_PATH/ already exists. Skipping conda env setup."
                     fi
 
-                    echo "exiting.....$1"
-                    exit 0
-
                     activate_env
 
                     symlink_viral_ngs
