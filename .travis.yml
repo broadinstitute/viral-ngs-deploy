@@ -59,4 +59,4 @@ install:
 
 script:
   - travis_wait 75 travis/tests-unit.sh
-  - travi_wait 75 travis/tests-long.sh
+  - travis_wait 75 travis/tests-long.sh
