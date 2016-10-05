@@ -13,6 +13,6 @@ if [ "$TEST_DOCKER" == "true" ]; then
     # tar contents to dereference symlinks
     cd ./docker
     # build the docker image, and try to run it
-    travis_wait 75 "tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py"
+    tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py
 fi
 
