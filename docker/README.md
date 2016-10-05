@@ -16,14 +16,20 @@ By default, the pipeline will install a single-threaded version of [Novoalign](h
   Navigate to the directory containing the `Dockerfile`, then run:
   `tar -czh . | docker build --rm -`
   The `tar` is necessary because Docker cannot dereference symlinks, and by tarring the directory, symlinks
-  to files in higher filesystem levels can be used.
+  to files in higher filesystem levels can be used. In particular, it is assumed a symlink exists within the directory containing the `Dockerfile` to the `easy-deploy-script/` directory of this repo.
   
 ### To run
 Download licensed copies of GATK and Novoalign to the host machine (for Linux-64), and run:
 ```shell
 export GATK_PATH=/path/to/gatk/
 export NOVOALIGN_PATH=/path/to/novoalign/
-docker run --rm -v $NOVOALIGN_PATH:/novoalign -v $GATK_PATH:/gatk -v /path/to/dir/on/host:/user-data -t -i <image_ID> "<command>.py subcommand"
+docker run --rm -v $NOVOALIGN_PATH:/novoalign -v $GATK_PATH:/gatk -v /path/to/dir/on/host:/user-data -i <image_ID> "<command>.py subcommand"
+```
+
+Alternatively, GATK_PATH can be passed in as an argument to commands requiring it, though the jar file must be accessible within the container via a shared volume from the host. Ex:
+```shell
+# assumes GenomeAnalysisTK.jar is in your cwd
+docker run --rm -v $(pwd):/data -i <image_ID> "assembly.py refine_assembly --GATK_PATH /data/GenomeAnalysisTK.jar"
 ```
 
 The Novoalign argument, `-v $NOVOALIGN_PATH:/novoalign`, can be omitted if single-threaded Novoalign is adequate.
