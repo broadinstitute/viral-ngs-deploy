@@ -54,9 +54,12 @@ RUN chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
 USER $DOCKER_USER
 RUN bash ./easy-deploy-viral-ngs.sh setup
 
-# source the viral-ngs conda environment in the .bashrc file so all
-# commands are always available for a bash seshion    
-RUN echo "source easy-deploy-viral-ngs.sh load &> /dev/null" >> /home/$DOCKER_USER/.bashrc
+# add a wrapper script to load the viral-ngs environment via the easy-deploy script
+# and then run any commands desired
+USER root
+ADD ./env_wrapper.sh /home/$DOCKER_USER/env_wrapper.sh
+RUN chmod +x ./env_wrapper.sh
+RUN chown $DOCKER_USER:$DOCKER_USER ./env_wrapper.sh
+USER $DOCKER_USER
 
-# make the entrypoint bash with login (source .bashrc)
-ENTRYPOINT ["/bin/bash", "--login", "-i", "-c"]
+ENTRYPOINT ["./env_wrapper.sh"]

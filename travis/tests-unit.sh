@@ -12,6 +12,7 @@ fi
 if [ "$TEST_DOCKER" == "true" ]; then
     # tar contents to dereference symlinks
     cd ./docker
-    tar -czh . | docker build --rm -
+    # build the docker image, and try to run it
+    tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py
 fi
 

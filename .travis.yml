@@ -58,5 +58,5 @@ install:
   - travis/install-pip.sh  
 
 script:
-  - travis/tests-unit.sh
-  - travis/tests-long.sh
+  - travis_wait 75 travis/tests-unit.sh
+  - travis_wait 75 travis/tests-long.sh
