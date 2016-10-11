@@ -7,4 +7,4 @@ export SKIP_VERSION_CHECK=true
 
 source ./easy-deploy-viral-ngs.sh load
 
-$@
+"$@"
