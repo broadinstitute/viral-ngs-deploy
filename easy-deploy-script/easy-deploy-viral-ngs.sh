@@ -32,10 +32,13 @@ CONDA_ENV_CACHE="conda-cache"
 PROJECTS_DIR="projects"
 MINICONDA_DIR="mc3"
 
-VIRAL_CONDA_ENV_PATH="$SCRIPTPATH/$CONTAINING_DIR/$CONDA_ENV_BASENAME"
-PROJECTS_PATH="$SCRIPTPATH/$CONTAINING_DIR/$PROJECTS_DIR"
-VIRAL_NGS_PATH="$SCRIPTPATH/$CONTAINING_DIR/$VIRAL_NGS_DIR"
-MINICONDA_PATH="$SCRIPTPATH/$CONTAINING_DIR/$MINICONDA_DIR"
+INSTALL_PATH="${VIRAL_NGS_INSTALL_PATH:-$SCRIPTPATH/$CONTAINING_DIR}"
+INSTALL_PATH=$(readlink -f $INSTALL_PATH)
+
+VIRAL_CONDA_ENV_PATH="$INSTALL_PATH/$CONDA_ENV_BASENAME"
+PROJECTS_PATH="$INSTALL_PATH/$PROJECTS_DIR"
+VIRAL_NGS_PATH="$INSTALL_PATH/$VIRAL_NGS_DIR"
+MINICONDA_PATH="$INSTALL_PATH/$MINICONDA_DIR"
 
 SELF_UPDATE_URL="https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh"
 
@@ -174,13 +177,11 @@ function install_miniconda(){
         else
             miniconda_url=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
+        wget --progress=dot $miniconda_url -O "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
+        chmod +x "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
+        "$INSTALL_PATH/Miniconda3-latest-x86_64.sh" -b -f -p "$MINICONDA_PATH"
 
-        wget -q $miniconda_url -O Miniconda3-latest-x86_64.sh -P $(dirname $MINICONDA_PATH)/
-
-        chmod +x $(dirname $MINICONDA_PATH)/Miniconda3-latest-x86_64.sh
-        $(dirname $MINICONDA_PATH)/Miniconda3-latest-x86_64.sh -b -f -p "$MINICONDA_PATH"
-
-        rm $(dirname $MINICONDA_PATH)/Miniconda3-latest-x86_64.sh
+        rm "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
     fi
 
     if [ -d "$MINICONDA_PATH/bin" ]; then
@@ -197,39 +198,114 @@ function install_miniconda(){
     fi
 }
 
+function install_viral_ngs_conda(){
+    # provide an avenue to specify a package path, or to use a previously-built local package
+    if [ $# -eq 2 ]; then
+        if [ "$2" == "--use-local" ]; then
+            conda install -q -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" --use-local viral-ngs || exit 1
+            echo "using local...."
+            exit 0
+        else
+            conda install -q -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" $2 || exit 1
+        fi
+
+    elif [ $# -eq 3 ]; then
+        if [ "$2" == "--viral-ngs-version" ]; then
+            conda install -q -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" viral-ngs=$3 || exit 1
+        else
+            echo "--viral-ngs-version specified but no version given"
+        fi
+    elif [ $# -eq 1 ]; then
+        conda install -q -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" viral-ngs || exit 1
+    fi
+}
+
+function install_viral_ngs_git(){
+    if [ ! -L "$VIRAL_NGS_PATH" ]; then
+        git clone https://github.com/broadinstitute/viral-ngs.git "$VIRAL_NGS_PATH"
+    else
+        echo "$VIRAL_NGS_PATH/ symlink already exists. Skipping link."
+    fi
+}
+
+function install_viral_ngs_conda_deps() {
+    conda install -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-conda.txt"
+    conda install -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-pipes.txt"
+}
+
+
+function install_tools(){
+    # install tools
+    py.test $VIRAL_NGS_PATH/test/unit/test_tools.py
+
+    # get the version of gatk expected based on the installed conda package
+    EXPECTED_GATK_VERSION=$(conda list | grep gatk | awk -F" " '{print $2}')
+    if [ -z "$GATK_JAR_PATH" ]; then
+        # if the env var is not set, try to get the jar location using the default Broad path
+        if [[ "$(hash dnsdomainname &> /dev/null && dnsdomainname || echo '')" == *"broadinstitute.org" || "$HOSTNAME" == *".broadinstitute.org" || "$DOMAINNAME" == "broadinstitute.org" ]]; then
+            echo "This script is being run on a Broad Institute system."
+            echo "Trying to find GATK..."
+            export GATK_JAR_PATH=$(ls /humgen/gsa-hpprojects/GATK/bin &> /dev/null && sleep 5 && find /humgen/gsa-hpprojects/GATK/bin/GenomeAnalysisTK-$EXPECTED_GATK_VERSION-* -maxdepth 0 -type d)/GenomeAnalysisTK.jar
+        fi
+    fi
+
+    # if the gatk jar file exists, call gatk-register
+    if [ -e "$GATK_JAR_PATH" ]; then
+        echo "GATK found: $GATK_JAR_PATH"
+        gatk-register $GATK_JAR_PATH
+    else
+        echo "GATK jar could not be found on this system for GATK version $EXPECTED_GATK_VERSION"
+        echo "Please activate the viral-ngs conda environment and 'gatk-register /path/to/GenomeAnalysisTK.jar'"
+        exit 0
+    fi
+
+    echo ""
+    if [ ! -z "$NOVOALIGN_PATH" ]; then
+        novoalign-license-register "$NOVOALIGN_PATH/novoalign.lic"
+    elif [ ! -z "$NOVOALIGN_LICENSE_PATH" ]; then
+        novoalign-license-register "$NOVOALIGN_LICENSE_PATH"
+    else
+        echo "No Novoalign license found via NOVOALIGN_PATH or NOVOALIGN_LICENSE_PATH"
+        echo "Please activate the viral-ngs conda environment and run 'novoalign-license-register /path/to/novoalign.lic'"
+    fi
+}
+
 function create_project(){
     echo "Populating project directory..."
     # first arg is project folder name
     starting_dir=$(pwd)
 
     mkdir -p $PROJECTS_PATH
-    cd $PROJECTS_PATH
-    mkdir $1
-    cd $1
+    PROJECT_PATH="$PROJECTS_PATH/$1"
+    mkdir "$PROJECT_PATH"
+    pushd "$PROJECT_PATH" > /dev/null
     mkdir data log reports tmp
-    cd data
+    pushd data > /dev/null
     mkdir 00_raw 01_cleaned 01_per_sample 02_align_to_self 02_assembly 03_align_to_ref 03_interhost 04_intrahost
-    cd ../
+    popd > /dev/null
     touch samples-metagenomics.txt
     touch samples-depletion.txt
     touch samples-assembly.txt
     touch samples-runs.txt
     touch samples-assembly-failures.txt
-    cp $VIRAL_NGS_PATH/pipes/config.yaml ../../$VIRAL_NGS_DIR/pipes/Snakefile ./
-    ln -s "$VIRAL_NGS_PATH/" "$(pwd)/bin"
-    ln -s "$VIRAL_CONDA_ENV_PATH/" "$(pwd)/conda-env"
-    ln -s "$MINICONDA_PATH/" "$(pwd)/mc3"
-    ln -s "$VIRAL_NGS_PATH/pipes/Broad_UGER/run-pipe.sh" "$(pwd)/run-pipe_UGER.sh"
-    ln -s "$VIRAL_NGS_PATH/pipes/Broad_LSF/run-pipe.sh" "$(pwd)/run-pipe_LSF.sh"
+    pushd > /dev/null
 
-    cd $starting_dir
+    cp "$VIRAL_NGS_PATH/pipes/config.yaml" "$PROJECT_PATH"
+    ln -s "../../$VIRAL_NGS_DIR/pipes/Snakefile" "$PROJECT_PATH/Snakefile"
+    ln -s "../../$VIRAL_NGS_DIR/" "$PROJECT_PATH/bin"
+    ln -s "../../$CONDA_ENV_BASENAME/" "$PROJECT_PATH/conda-env"
+    ln -s "../../$MINICONDA_DIR/" "$PROJECT_PATH/mc3"
+    ln -s "../../$VIRAL_NGS_DIR/pipes/Broad_UGER/run-pipe.sh" "$PROJECT_PATH/run-pipe_UGER.sh"
+    ln -s "run-pipe_UGER.sh" "$PROJECT_PATH/run-pipe.sh"
+
+    cd "$starting_dir"
 }
 
 function activate_env(){
-    if [ -d "$SCRIPTPATH/$CONTAINING_DIR" ]; then
+    if [ -d "$INSTALL_PATH" ]; then
         echo "viral-ngs parent directory found"
     else
-        echo "viral-ngs parent directory not found: $SCRIPTPATH/$CONTAINING_DIR not found."
+        echo "viral-ngs parent directory not found: $INSTALL_PATH not found."
         echo "Have you run the setup?"
         echo "Usage: $0 setup"
         cd $STARTING_DIR
@@ -240,7 +316,7 @@ function activate_env(){
         if [ -z "$CONDA_DEFAULT_ENV" ]; then
             echo "Activating viral-ngs environment..."
             prepend_miniconda
-            
+
             source activate $VIRAL_CONDA_ENV_PATH
 
             # unset JAVA_HOME if set, so we can use the conda-supplied version
@@ -270,7 +346,7 @@ function activate_env(){
 }
 
 function print_usage(){
-    echo "Usage: $(basename $SCRIPT) {load,create-project,setup|setup-py2,upgrade,update-easy-deploy}"
+    echo "Usage: $(basename $SCRIPT) {load,create-project,setup|setup-py2|setup-git,upgrade|upgrade-deps,update-easy-deploy}"
 }
 
 function symlink_viral_ngs(){
@@ -296,9 +372,14 @@ function symlink_viral_ngs(){
 }
 
 function check_viral_ngs_version(){
-    # this must be run within an active conda environment
-    # so, after a call to "activate_env"
-    if [ -z "$SKIP_VERSION_CHECK" ]; then
+    if [ -d "$VIRAL_NGS_PATH/.git" ]; then
+        pushd "$VIRAL_NGS_PATH" > /dev/null
+        git remote update
+        git status -uno
+        popd > /dev/null
+    elif [ -z "$SKIP_VERSION_CHECK" ]; then
+        # this must be run within an active conda environment
+        # so, after a call to "activate_env"
         echo "Checking viral-ngs version..."
         CURRENT_VER="$(conda list --no-pip viral-ngs | grep viral-ngs | grep -v packages | awk -F' ' '{print $2}')"
         # perhaps a better way...
@@ -372,105 +453,59 @@ if [ $# -eq 0 ]; then
     fi
 else
     case "$1" in
-       "setup"|"setup-py2")
-            if [ $# -eq 1 -o $# -eq 2 -o $# -eq 3 ]; then
-                if [[ $sourced -eq 1 ]]; then
-                    echo "ABORTING. $(basename $SCRIPT) must not be sourced during setup"
-                    echo "Usage: $(basename $SCRIPT) setup"
-                    return 1
+       "setup"|"setup-py2"|"setup-git")
+           if ! [ $# -eq 1 -o $# -eq 2 -o $# -eq 3 ]; then
+
+               echo "Usage: $(basename $SCRIPT) setup"
+               if [[ $sourced -eq 0 ]]; then
+                   exit 1
+               else
+                   return 1
+               fi
+           fi
+
+           if [[ $sourced -eq 1 ]]; then
+               echo "ABORTING. $(basename $SCRIPT) must not be sourced during setup"
+               echo "Usage: $(basename $SCRIPT) setup"
+               return 1
+           elif [ ! -z "$CONDA_DEFAULT_ENV" ]; then
+                   echo "The viral-ngs setup cannot be run while a conda environment is active."
+                   echo "The current environment must first be disabled via 'source deactivate'"
+                   exit 1
+           fi
+
+            mkdir -p "$INSTALL_PATH"
+            install_miniconda
+
+            if [ ! -d "$VIRAL_CONDA_ENV_PATH" ]; then
+                # provide an option to use Python 2 in the conda environment
+                if [ "$1" == "setup-py2" ]; then
+                    conda create -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=2 || exit 1
                 else
-                    if [ ! -z "$CONDA_DEFAULT_ENV" ]; then
-                        echo "The viral-ngs setup cannot be run while a conda environment is active."
-                        echo "The current environment must first be disabled via 'source deactivate'"
-                        exit 1
-                    fi
+                    conda create -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=3.5 || exit 1
+                fi
 
-                    mkdir -p $SCRIPTPATH/$CONTAINING_DIR
-                    cd $SCRIPTPATH/$CONTAINING_DIR
-
-                    install_miniconda
-
-                    if [ ! -d "$VIRAL_CONDA_ENV_PATH" ]; then
-                        # provide an option to use Python 2 in the conda environment
-                        if [ "$1" == "setup-py2" ]; then
-                            conda create -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=2 || exit 1
-                        else
-                            conda create -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=3.5 || exit 1
-                        fi
-
-                        # provide an avenue to specify a package path, or to use a previously-built local package
-                        if [ $# -eq 2 ]; then
-                            if [ "$2" == "--use-local" ]; then
-                                conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" --use-local viral-ngs || exit 1
-                                echo "using local...."
-                                exit 0
-                            else
-                                conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" $2 || exit 1
-                            fi
-                        elif [ $# -eq 3 ]; then
-                            if [ "$2" == "--viral-ngs-version" ]; then
-                                conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -q -p "$VIRAL_CONDA_ENV_PATH" viral-ngs=$3 || exit 1
-                            else 
-                                echo "--viral-ngs-version specified but no version given"
-                            fi
-                        elif [ $# -eq 1 ]; then
-                            conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -q -p "$VIRAL_CONDA_ENV_PATH" viral-ngs || exit 1
-                        fi
-
-                    else
-                        echo "$VIRAL_CONDA_ENV_PATH/ already exists. Skipping conda env setup."
-                    fi
-
-                    activate_env
-
-                    symlink_viral_ngs
-
-                    # install tools
-                    py.test $VIRAL_NGS_PATH/test/unit/test_tools.py
-
-                    # get the version of gatk expected based on the installed conda package
-                    EXPECTED_GATK_VERSION=$(conda list | grep gatk | awk -F" " '{print $2}')
-                    if [ -z "$GATK_JAR_PATH" ]; then
-                        # if the env var is not set, try to get the jar location using the default Broad path
-                        if [[ "$(hash dnsdomainname &> /dev/null && dnsdomainname || echo '')" == *"broadinstitute.org" || "$HOSTNAME" == *".broadinstitute.org" || "$DOMAINNAME" == "broadinstitute.org" ]]; then
-                            echo "This script is being run on a Broad Institute system."
-                            echo "Trying to find GATK..."
-                            export GATK_JAR_PATH=$(ls /humgen/gsa-hpprojects/GATK/bin &> /dev/null && sleep 5 && find /humgen/gsa-hpprojects/GATK/bin/GenomeAnalysisTK-$EXPECTED_GATK_VERSION-* -maxdepth 0 -type d)/GenomeAnalysisTK.jar
-                        fi
-                    fi
-
-                    # if the gatk jar file exists, call gatk-register
-                    if [ -e "$GATK_JAR_PATH" ]; then
-                        echo "GATK found: $GATK_JAR_PATH"
-                        gatk-register $GATK_JAR_PATH
-                    else
-                        echo "GATK jar could not be found on this system for GATK version $EXPECTED_GATK_VERSION"
-                        echo "Please activate the viral-ngs conda environment and 'gatk-register /path/to/GenomeAnalysisTK.jar'"
-                        exit 0
-                    fi
-
-                    echo ""
-                    if [ ! -z "$NOVOALIGN_PATH" ]; then
-                        novoalign-license-register "$NOVOALIGN_PATH/novoalign.lic"
-                    elif [ ! -z "$NOVOALIGN_LICENSE_PATH" ]; then
-                        novoalign-license-register "$NOVOALIGN_LICENSE_PATH"
-                    else
-                        echo "No Novoalign license found via NOVOALIGN_PATH or NOVOALIGN_LICENSE_PATH"
-                        echo "Please activate the viral-ngs conda environment and run 'novoalign-license-register /path/to/novoalign.lic'"
-                    fi
-
-                    echo "Setup complete. Do you want to start a project? Run:"
-                    echo "$0 create-project <project_name>"
-                    echo ""
+                if [[ "$1" == "setup-git" ]]; then
+                    install_viral_ngs_git
+                    install_viral_ngs_conda_deps
+                else
+                    install_viral_ngs_conda $@
                 fi
             else
-                echo "Usage: $(basename $SCRIPT) setup"
-                if [[ $sourced -eq 0 ]]; then
-                    exit 1
-                else
-                    return 1
-                fi
+                echo "$VIRAL_CONDA_ENV_PATH/ already exists. Skipping conda env setup."
             fi
+
+            activate_env
+
+            if [[ "$1" != "setup-git" ]]; then
+                symlink_viral_ngs
+            fi
+
+            install_tools
+
+            echo "Setup complete. Do you want to start a project? Run:"
+            echo "$0 create-project <project_name>"
+            echo ""
        ;;
        "load")
             if [ $# -eq 1 ]; then
@@ -482,8 +517,6 @@ else
 
                     check_viral_ngs_version
 
-                    ls -lah
-
                     return 0
                 fi
             else
@@ -494,6 +527,15 @@ else
                     return 1
                 fi
             fi
+       ;;
+       "upgrade-deps")
+           if [ ! -d "$VIRAL_NGS_PATH/.git" ]; then
+               echo "upgrade-deps requires a viral-ngs installation from git"
+               echo "Use 'upgrade' for a versioned install"
+               exit 1
+           fi
+           activate_env
+           install_viral_ngs_conda_deps
        ;;
        "upgrade")
             if [ $# -eq 1 ]; then

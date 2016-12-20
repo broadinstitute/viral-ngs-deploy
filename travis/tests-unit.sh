@@ -51,4 +51,3 @@ if [ "$TEST_DOCKER" == "true" ]; then
         docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
     fi
 fi
-
