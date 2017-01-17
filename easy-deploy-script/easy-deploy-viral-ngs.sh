@@ -309,7 +309,7 @@ function activate_env(){
             fi
 
             # override $PS1 to have a shorter prompt
-            export PS1="(\033[1mviral-ngs\033[0m)\s:\h:\w \! \$ "
+            export PS1="(\[\033[1m\]viral-ngs\[\033[0m)\]\s:\h:\w \! \$ "
         else
             if [[ "$CONDA_DEFAULT_ENV" != "$VIRAL_CONDA_ENV_PATH" ]]; then
                 echo "It looks like a conda environment is already active,"
