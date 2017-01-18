@@ -181,8 +181,8 @@ function install_miniconda(){
 
     if [ -d "$MINICONDA_PATH/bin" ]; then
         prepend_miniconda
-        conda install -q -y conda==4.0.10
-        conda install -q -y conda-build==1.7.1
+        conda install -q -y -c defaults conda #==4.0.10
+        conda install -q -y -c defaults conda-build #==1.7.1
     else
         echo "It looks like the Miniconda installation failed"
         exit 1
@@ -294,7 +294,7 @@ function check_viral_ngs_version(){
         echo "Checking viral-ngs version..."
         CURRENT_VER="$(conda list --no-pip viral-ngs | grep viral-ngs | grep -v packages | awk -F" " '{print $2}')"
         # perhaps a better way...
-        AVAILABLE_VER="$(conda search --override-channels -f -c r -c bioconda -c conda-forge -c defaults --override-channels viral-ngs --json | grep version | tail -n 1 | awk -F" " '{print $2}' | perl -lape 's/"//g')"
+        AVAILABLE_VER="$(conda search --override-channels -f -c r -c bioconda -c conda-forge -c defaults --override-channels viral-ngs --json | grep version | tail -n 1 | awk -F" " '{print $2}' | perl -lape 's/[",]+//g')"
         if [ "$CURRENT_VER" != "$AVAILABLE_VER" ]; then
             echo ""
             echo "============================================================================================================"
@@ -343,7 +343,7 @@ function updateSelf() {
 #!/bin/bash
 # Overwrite old file with new
 if mv "$SCRIPT.tmp" "$SCRIPT"; then
-  echo "done." 
+  echo "done."
   echo "Self-update complete."
   rm \$0
 else
@@ -387,9 +387,9 @@ else
                         if [ "$1" == "setup-py2" ]; then
                             conda create -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH python=2
                         else
-                            conda create -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH python=3
+                            conda create -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH python=3.5
                         fi
-                        
+
                         # provide an avenue to specify a package path, or to use a previously-built local package
                         if [ $# -eq 2 ]; then
                             if [ "$2" == "--use-local" ]; then
