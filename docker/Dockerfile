@@ -14,6 +14,8 @@ MAINTAINER Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>
 #   docker rmi $(docker images -q)
 #   docker volume rm $(docker volume ls -qf dangling=true)
 
+ARG VIRAL_NGS_VERSION
+
 # System packages 
 RUN apt-get update && apt-get upgrade
 RUN apt-get install -y curl bzip2 build-essential python wget 
@@ -52,7 +54,10 @@ ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER/easy-deploy
 RUN chmod +x ./easy-deploy-viral-ngs.sh
 RUN chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
 USER $DOCKER_USER
-RUN bash ./easy-deploy-viral-ngs.sh setup
+ENV VIRAL_NGS_VERSION $VIRAL_NGS_VERSION
+RUN echo "Running easy install with viral-ngs version $VIRAL_NGS_VERSION"
+RUN bash -c 'echo $(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
+RUN bash -c '$(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 
 # add a wrapper script to load the viral-ngs environment via the easy-deploy script
 # and then run any commands desired
