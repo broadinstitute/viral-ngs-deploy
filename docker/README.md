@@ -18,6 +18,12 @@ By default, the pipeline will install a single-threaded version of [Novoalign](h
   The `tar` is necessary because Docker cannot dereference symlinks, and by tarring the directory, symlinks
   to files in higher filesystem levels can be used. In particular, it is assumed a symlink exists within the directory containing the `Dockerfile` to the `easy-deploy-script/` directory of this repo.
   
+  To build with a specific version of viral-ngs, a Docker `--build-arg` may optionally be specified. Ex.:
+  ```
+  tar -czh . | docker build --rm --build-arg VIRAL_NGS_VERSION=1.15.0 -
+  ```
+  Note that the version of viral-ngs specified must exist in one of the channels specified in the easy-install script.
+  
 ### To run
 Download licensed copies of GATK and Novoalign to the host machine (for Linux-64), and run:
 ```shell
