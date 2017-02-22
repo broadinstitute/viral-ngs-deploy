@@ -16,7 +16,7 @@ fi
 
 if [ "$TEST_DOCKER" == "true" ]; then
     export REPO=broadinstitute/viral-ngs
-    export TAG=`if [ "$UPSTREAM_TAG" == "master" ]; then echo "latest"; else echo $UPSTREAM_TAG ; fi`
+    export TAG=$(if [ "$UPSTREAM_TAG" == "master" ]; then echo "latest"; else echo "$UPSTREAM_TAG" ; fi)
     # tar contents to dereference symlinks
     cd ./docker
 
@@ -25,9 +25,8 @@ if [ "$TEST_DOCKER" == "true" ]; then
         tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
     else
-        docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+        docker login -e "$DOCKER_EMAIL" -u "$DOCKER_USER" -p "$DOCKER_PASS"
         tar -czh . | docker build --rm -t "$REPO:$TAG" -q - | xargs -I{} docker run --rm {} illumina.py && docker push "$REPO:$TAG"
-    else
     fi
 fi
 
