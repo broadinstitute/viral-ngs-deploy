@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -x
 
 echo ""
 echo "UPSTREAM_BRANCH: $UPSTREAM_BRANCH"
@@ -27,9 +27,10 @@ if [ "$TEST_DOCKER" == "true" ]; then
         tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
     else
-        docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
         export VIRAL_NGS_VERSION=$(echo "$UPSTREAM_TAG" | perl -lape 's/^v(.*)/$1/g') # strip 'v' prefix
-        tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$TAG" -q - | xargs -I{} docker run --rm {} illumina.py && docker push "$REPO:$TAG"
+        build_image=$(tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION" -q -) 
+        echo "build_image: $build_image"
+        docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
     fi
 fi
 
