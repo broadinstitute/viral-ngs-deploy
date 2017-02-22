@@ -26,7 +26,8 @@ if [ "$TEST_DOCKER" == "true" ]; then
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
     else
         docker login -e "$DOCKER_EMAIL" -u "$DOCKER_USER" -p "$DOCKER_PASS"
-        tar -czh . | docker build --rm -t "$REPO:$TAG" -q - | xargs -I{} docker run --rm {} illumina.py && docker push "$REPO:$TAG"
+        export VIRAL_NGS_VERSION=$(echo "$UPSTREAM_TAG" | perl -lape 's/^v(.*)/$1/g') # strip 'v' prefix
+        tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$TAG" -q - | xargs -I{} docker run --rm {} illumina.py && docker push "$REPO:$TAG"
     fi
 fi
 
