@@ -70,4 +70,3 @@ install:
 
 script:
   - travis/tests-unit.sh
-  - travis_wait 75 travis/tests-long.sh
