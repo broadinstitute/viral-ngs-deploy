@@ -8,8 +8,17 @@ echo "UPSTREAM_TAG: $UPSTREAM_TAG"
 echo ""
 
 if [ "$TEST_EASY_INSTALL" == "true" ]; then
+    echo "Checking easy install script..."
     cp ./easy-deploy-script/easy-deploy-viral-ngs.sh /tmp/easy-deploy-viral-ngs.sh
     /tmp/easy-deploy-viral-ngs.sh setup
+fi
+
+if [ "$TEST_EASY_INSTALL" == "long_prefix" ]; then
+    echo "Checking easy install script with long path prefix..."
+    echo "See: https://github.com/conda/conda-build/pull/877"
+    mkdir -p /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/
+    cp ./easy-deploy-script/easy-deploy-viral-ngs.sh /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh
+    /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh setup
 fi
 
 if [ "$TEST_ANSIBLE" == "true" ]; then
