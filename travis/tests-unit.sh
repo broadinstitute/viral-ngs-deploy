@@ -21,7 +21,7 @@ if [ "$TEST_EASY_INSTALL" == "long_prefix" ]; then
     
     # check the exit code of the setup script. Until the build prefix issue is fixed, 
     # our script will check the path prefix and we can condsider exit code 80 to be a successful test
-    rc=$($(/tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh setup); echo $?)
+    rc=$($("/tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh setup"); echo "$?")
     if [[ "$rc" == "80" ]]; then exit 0; else exit $(($rc + 0)); fi
 fi
 
