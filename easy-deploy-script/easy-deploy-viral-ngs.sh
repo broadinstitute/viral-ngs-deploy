@@ -23,7 +23,7 @@ SCRIPT_DIRNAME="$(dirname "$SOURCE")"
 SCRIPTPATH="$(cd -P "$(echo $SCRIPT_DIRNAME)" &> /dev/null && pwd)"
 SCRIPT="$SCRIPTPATH/$(basename "$SCRIPT")"
 
-CONDA_PREFIX_LENGTH_LIMIT=80
+CONDA_PREFIX_LENGTH_LIMIT=253
 
 CONTAINING_DIR="viral-ngs-etc"
 VIRAL_NGS_DIR="viral-ngs"
