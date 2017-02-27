@@ -33,6 +33,7 @@ env:
     - TEST_EASY_INSTALL=false
 
 matrix:
+  fast_finish: true
   include:
     - os: linux
       dist: trusty
@@ -68,5 +69,5 @@ install:
   - travis/install-pip.sh  
 
 script:
-  - travis_wait 75 travis/tests-unit.sh
+  - travis/tests-unit.sh
   - travis_wait 75 travis/tests-long.sh
