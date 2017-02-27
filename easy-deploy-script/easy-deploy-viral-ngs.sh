@@ -23,7 +23,7 @@ SCRIPT_DIRNAME="$(dirname "$SOURCE")"
 SCRIPTPATH="$(cd -P "$(echo $SCRIPT_DIRNAME)" &> /dev/null && pwd)"
 SCRIPT="$SCRIPTPATH/$(basename "$SCRIPT")"
 
-CONDA_PREFIX_LENGTH_LIMIT=253
+CONDA_PREFIX_LENGTH_LIMIT=80
 
 CONTAINING_DIR="viral-ngs-etc"
 VIRAL_NGS_DIR="viral-ngs"
@@ -54,7 +54,7 @@ if [ $current_prefix_length -ge $CONDA_PREFIX_LENGTH_LIMIT ]; then
     echo "This is a known bug in conda ($CONDA_PREFIX_LENGTH_LIMIT character limit): "
     echo "https://github.com/conda/conda-build/pull/877"
     echo "To prevent this error, move this script higher in the filesystem hierarchy."
-    exit 1
+    exit 80
 fi
 
 python_check=$(hash python)
