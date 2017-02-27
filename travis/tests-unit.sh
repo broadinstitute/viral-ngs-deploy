@@ -17,12 +17,15 @@ if [ "$TEST_EASY_INSTALL" == "long_prefix" ]; then
     echo "Checking easy install script with long path prefix..."
     echo "See: https://github.com/conda/conda-build/pull/877"
     mkdir -p /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/
-    cp ./easy-deploy-script/easy-deploy-viral-ngs.sh /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh
+    cp ./easy-deploy-script/easy-deploy-viral-ngs.sh "/tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh"
     
     # check the exit code of the setup script. Until the build prefix issue is fixed, 
     # our script will check the path prefix and we can condsider exit code 80 to be a successful test
-    rc=$($("/tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh setup"); echo "$?")
-    if [[ "$rc" == "80" ]]; then exit 0; else exit $(($rc + 0)); fi
+    set +e # disable exit-on-error
+    /tmp/this/is/a/long/path/prefix/greater/than/eighty/characters/in/lenth/to/test/conda/prefix/length/limits/easy-deploy-viral-ngs.sh setup
+    rc="$?"
+    if [[ "$rc" == "80" ]]; then true; else exit $(($rc + 0)); fi
+    set -e # re-enable exit-on-error
 fi
 
 if [ "$TEST_ANSIBLE" == "true" ]; then
