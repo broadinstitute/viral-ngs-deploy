@@ -38,7 +38,9 @@ if [ "$TEST_DOCKER" == "true" ]; then
 
     if [ -z "$UPSTREAM_TAG" ]; then
         # build the docker image, and try to run it
-        tar -czh . | docker build --rm -q - | xargs -I{} docker run --rm {} illumina.py
+        build_image=$(tar -czh . | docker build --rm -q -)
+        echo "build_image: $build_image"
+        docker run --rm $build_image illumina.py
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
     else
         export REPO=broadinstitute/viral-ngs
