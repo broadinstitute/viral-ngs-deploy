@@ -155,7 +155,11 @@ function prepend_miniconda(){
         #fi
     else
         echo "Miniconda directory not found."
-        exit 1
+        if [[ $sourced -eq 0 ]]; then
+            exit 1
+        else
+            return 1
+        fi
     fi
 }
 
@@ -185,7 +189,11 @@ function install_miniconda(){
         conda install -q -y -c defaults conda-build #==1.7.1
     else
         echo "It looks like the Miniconda installation failed"
-        exit 1
+        if [[ $sourced -eq 0 ]]; then
+            exit 1
+        else
+            return 1
+        fi
     fi
 }
 
