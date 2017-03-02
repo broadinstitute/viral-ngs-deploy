@@ -1,4 +1,11 @@
-FROM ubuntu:15.04
+# This base image is equivalent to Ubuntu 16.04 but has better defaults
+# and fixes numerous problems with the stock Ubuntu images.
+# read more about it here: https://github.com/phusion/baseimage-docker
+FROM phusion/baseimage:0.9.19
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
 MAINTAINER Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>
 
 # to build:
