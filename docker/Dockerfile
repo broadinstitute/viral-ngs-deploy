@@ -62,6 +62,7 @@ USER $DOCKER_USER
 ENV VIRAL_NGS_VERSION $VIRAL_NGS_VERSION
 
 RUN echo "Running easy install with viral-ngs version $VIRAL_NGS_VERSION"
+RUN bash -c 'echo $(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 RUN bash -c '$(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 
 # add a wrapper script to load the viral-ngs environment via the easy-deploy script
