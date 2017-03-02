@@ -22,7 +22,20 @@ By default, the pipeline will install a single-threaded version of [Novoalign](h
   ```
   tar -czh . | docker build --rm --build-arg VIRAL_NGS_VERSION=1.15.0 -
   ```
-  Note that the version of viral-ngs specified must exist in one of the channels specified in the easy-install script.
+  Note that the version of viral-ngs specified must exist in one of the channels specified in the easy-install script. As of March 2017, check available version at [broad-viral](https://anaconda.org/broad-viral/viral-ngs/files) channel.  Otherwise, build may fail with an error like this:
+
+  ```shell
+ PackageNotFoundError: Package not found: '' Package missing in current linux-64 channels:
+  - viral-ngs 1.15.0*
+
+You can search for packages on anaconda.org with
+
+    anaconda search -t conda viral-ngs
+
+You may need to install the anaconda-client command line client with
+
+    conda install anaconda-client
+  ```
   
 ### To run
 Download licensed copies of GATK and Novoalign to the host machine (for Linux-64), and run:
