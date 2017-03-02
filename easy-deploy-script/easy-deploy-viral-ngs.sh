@@ -300,9 +300,9 @@ function check_viral_ngs_version(){
     # so, after a call to "activate_env"
     if [ -z "$SKIP_VERSION_CHECK" ]; then
         echo "Checking viral-ngs version..."
-        CURRENT_VER="$(conda list --no-pip viral-ngs | grep viral-ngs | grep -v packages | awk -F" " '{print $2}')"
+        CURRENT_VER="$(conda list --no-pip viral-ngs | grep viral-ngs | grep -v packages | awk -F' ' '{print $2}')"
         # perhaps a better way...
-        AVAILABLE_VER="$(conda search --override-channels -f -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels viral-ngs --json | grep version | tail -n 1 | awk -F" " '{print $2}' | perl -lape 's/[",]+//g')"
+        AVAILABLE_VER="$(conda search --override-channels -f -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels viral-ngs --json | grep version | tail -n 1 | awk -F' ' '{print $2}' | perl -lape 's/[\",]+//g')"
         if [ "$CURRENT_VER" != "$AVAILABLE_VER" ]; then
             echo ""
             echo "============================================================================================================"
