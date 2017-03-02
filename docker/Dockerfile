@@ -23,10 +23,14 @@ MAINTAINER Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>
 
 ARG VIRAL_NGS_VERSION
 
+# Silence some warnings about Readline. Checkout more over here:
+# https://github.com/phusion/baseimage-docker/issues/58
+ENV DEBIAN_FRONTEND noninteractive
+
 # System packages 
-RUN apt-get update && apt-get upgrade
-RUN apt-get install -y curl bzip2 build-essential python wget 
-RUN apt-get install -y less nano
+RUN apt-get update && \
+apt-get install -y curl bzip2 build-essential python wget less nano libterm-readline-gnu-perl &&\
+apt-get upgrade -y
 
 # Set the locale
 RUN locale-gen en_US.UTF-8
@@ -58,20 +62,21 @@ RUN ln -s /user-data /home/$DOCKER_USER/data
 #RUN curl -LO https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh
 USER root
 ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER/easy-deploy-viral-ngs.sh
-RUN chmod +x ./easy-deploy-viral-ngs.sh
-RUN chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
+RUN chmod +x ./easy-deploy-viral-ngs.sh && \
+    chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
 USER $DOCKER_USER
 ENV VIRAL_NGS_VERSION $VIRAL_NGS_VERSION
+
 RUN echo "Running easy install with viral-ngs version $VIRAL_NGS_VERSION"
-RUN bash -c 'echo $(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 RUN bash -c '$(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 
 # add a wrapper script to load the viral-ngs environment via the easy-deploy script
 # and then run any commands desired
 USER root
 ADD ./env_wrapper.sh /home/$DOCKER_USER/env_wrapper.sh
-RUN chmod +x ./env_wrapper.sh
-RUN chown $DOCKER_USER:$DOCKER_USER ./env_wrapper.sh
+RUN chmod +x ./env_wrapper.sh && chown $DOCKER_USER:$DOCKER_USER ./env_wrapper.sh
 USER $DOCKER_USER
+
+ENV DEBIAN_FRONTEND teletype
 
 ENTRYPOINT ["./env_wrapper.sh"]
