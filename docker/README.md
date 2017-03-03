@@ -61,7 +61,7 @@ The `<command>.py subcommand` specified must match one of the [documented viral-
 
 #### Shell usage
 To use a shell within a viral-ngs Docker container, pass `/bin/bash` to the run command:
-`docker run --rm -v $GATK_PATH:/gatk -v $NOVOALIGN_PATH:/novoalign -t -i <image_ID> /bin/bash`
+`docker run --rm -t -i <image_ID> /bin/bash`
 
 #### Clean slate
 If you receive a "no space on device" error, sometimes a fresh start can be helpful. You can run these commands to remove **ALL** current docker images, containers, and volumes (be careful! the commands will also remove Docker items unrelated to viral-ngs):
