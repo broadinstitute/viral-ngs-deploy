@@ -60,9 +60,9 @@ VOLUME ["/gatk", "/novoalign", "/user-data"]
 ENV GATK_PATH="/gatk" NOVOALIGN_PATH="/novoalign" VIRAL_NGS_DOCKER_DATA_PATH="/user-data"
 # It's a wrapper script to load the viral-ngs environment via the easy-deploy script
 # and then run any commands desired
-# Put this up here to avoid changing to root later
+# Put this up here to avoid long waiting time after heavier build layer below
 ADD ./env_wrapper.sh $INSTALL_DIR/env_wrapper.sh
-RUN chmod -R o+x $INSTALL_DIR/env_wrapper.sh
+RUN chmod -R +x $INSTALL_DIR/env_wrapper.sh
 
 ##############################
 # Setup viral-ngs
