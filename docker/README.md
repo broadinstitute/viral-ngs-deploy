@@ -14,19 +14,23 @@ By default, the pipeline will install a single-threaded version of [Novoalign](h
 
 ### To build
   Navigate to the directory containing the `Dockerfile`, then run:
+
   `tar -czh . | docker build --rm -`
+
   The `tar` is necessary because Docker cannot dereference symlinks, and by tarring the directory, symlinks
-  to files in higher filesystem levels can be used. In particular, it is assumed a symlink exists within the directory containing the `Dockerfile` to the `easy-deploy-script/` directory of this repo.
-  
+  to files in higher filesystem levels can be used. In particular, it is assumed a symlink exists within the directory containing the `Dockerfile` to the `easy-deploy-script/` directory of this repo. Furthermore, it is a good idea to use `-t` argument to give the build a tag so it is easier to manage images later. For example:
+
+  `tar -czh . | docker build --rm -t local/viral-ngs -`
+
   To build with a specific version of viral-ngs, a Docker `--build-arg` may optionally be specified. Ex.:
   ```
-  tar -czh . | docker build --rm --build-arg VIRAL_NGS_VERSION=1.15.0 -
+  tar -czh . | docker build --rm -t local/viral-ngs:1.16.0 --build-arg VIRAL_NGS_VERSION=1.16.0  -
   ```
   Note that the version of viral-ngs specified must exist in one of the channels specified in the easy-install script. As of March 2017, check available version at [broad-viral](https://anaconda.org/broad-viral/viral-ngs/files) channel.  Otherwise, build may fail with an error like this:
 
   ```shell
  PackageNotFoundError: Package not found: '' Package missing in current linux-64 channels:
-  - viral-ngs 1.15.0*
+  - viral-ngs 1.16.0*
 
 You can search for packages on anaconda.org with
 
