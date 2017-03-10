@@ -27,4 +27,9 @@ chown $USER_NAME:$GROUP_NAME /user-data
 
 source /opt/viral-ngs/easy-deploy-viral-ngs.sh load
 cd $HOME/data
+
+# Chroot does jump to a custom startup directory, so we don't use it.
+# More importantly, it allows to escape to root
+# chroot --userspec=$USER_NAME / "/bin/bash"
+# Therefore gosu is a good choice
 exec /usr/local/bin/gosu $USER_NAME "$@"
