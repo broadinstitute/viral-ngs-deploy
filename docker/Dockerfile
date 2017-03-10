@@ -81,3 +81,4 @@ RUN bash -c '$(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral
 ENV DEBIAN_FRONTEND teletype
 
 ENTRYPOINT ["/opt/viral-ngs/env_wrapper.sh"]
+CMD ["/bin/bash"]
