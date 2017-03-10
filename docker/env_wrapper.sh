@@ -8,8 +8,8 @@ export SKIP_VERSION_CHECK=true
 # Gosu setup adapted from https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
 USER_ID=${RUN_USER_ID:-1000}
 GROUP_ID=${RUN_GROUP_ID:-$USER_ID}
-USER_NAME=viral-ngs-user
-GROUP_NAME=ngs
+USER_NAME=user
+GROUP_NAME=viral-ngs
 
 echo "Starting with UID : $USER_ID, GID : $GROUP_ID"
 groupadd --gid $GROUP_ID $GROUP_NAME
