@@ -48,6 +48,9 @@ export GATK_PATH=/path/to/gatk/
 export NOVOALIGN_PATH=/path/to/novoalign/
 docker run --rm -v $NOVOALIGN_PATH:/novoalign -v $GATK_PATH:/gatk -v /path/to/dir/on/host:/user-data -i <image_ID> "<command>.py subcommand"
 ```
+The helper script `rundocker.sh` is also available to conveniently run more customized docker run commands. It requires, however, to edit the file to match with locations of GATK, Novoalign, and `viral-ngs` version. This is an example to run with `rundocker.sh`
+
+`./rundocker.sh /path/to/datdir/on/host "<command>.py subcommand"`
 
 Alternatively, GATK_PATH can be passed in as an argument to commands requiring it, though the jar file must be accessible within the container via a shared volume from the host. Ex:
 ```shell
