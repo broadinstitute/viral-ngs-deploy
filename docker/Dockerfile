@@ -25,9 +25,11 @@ ENV DEBIAN_FRONTEND noninteractive
 # System packages and locale
 ##############################
 RUN apt-get update \
-&& apt-get install -y --no-install-recommends ca-certificates wget curl bzip2 python less nano vim \
-&& apt-get upgrade -y \
-&& locale-gen en_US.UTF-8
+    && apt-get install -y --no-install-recommends ca-certificates wget curl bzip2 python less nano vim \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && locale-gen en_US.UTF-8
 
 # Set default locale to en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
@@ -42,9 +44,7 @@ RUN set -x \
     && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && gosu nobody true
 
 ##############################
 # Prepare user and installation directory
