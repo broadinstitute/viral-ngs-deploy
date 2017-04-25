@@ -46,7 +46,8 @@ if [ "$TEST_DOCKER" == "true" ]; then
         export REPO=broadinstitute/viral-ngs
         export TAG=$(if [ "$UPSTREAM_TAG" == "master" ]; then echo "latest"; else echo "$UPSTREAM_TAG" ; fi)
         export VIRAL_NGS_VERSION=$(echo "$UPSTREAM_TAG" | perl -lape 's/^v(.*)/$1/g') # strip 'v' prefix
-        build_image=$(tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION" -q -) 
+        #build_image=$(tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION" -q -) 
+        tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION" - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
         echo "build_image: $build_image"
         docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
     fi
