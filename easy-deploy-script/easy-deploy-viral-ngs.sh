@@ -175,7 +175,7 @@ function install_miniconda(){
             miniconda_url=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
 
-        wget $miniconda_url -O Miniconda3-latest-x86_64.sh -P $(dirname $MINICONDA_PATH)/
+        wget -q $miniconda_url -O Miniconda3-latest-x86_64.sh -P $(dirname $MINICONDA_PATH)/
 
         chmod +x $(dirname $MINICONDA_PATH)/Miniconda3-latest-x86_64.sh
         $(dirname $MINICONDA_PATH)/Miniconda3-latest-x86_64.sh -b -f -p "$MINICONDA_PATH"
@@ -409,12 +409,12 @@ else
                             fi
                         elif [ $# -eq 3 ]; then
                             if [ "$2" == "--viral-ngs-version" ]; then
-                                conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" viral-ngs=$3 || exit 1
+                                conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -q -p "$VIRAL_CONDA_ENV_PATH" viral-ngs=$3 || exit 1
                             else 
                                 echo "--viral-ngs-version specified but no version given"
                             fi
                         elif [ $# -eq 1 ]; then
-                            conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" viral-ngs || exit 1
+                            conda install -c broad-viral -c r -c bioconda -c conda-forge -c defaults --override-channels -y -q -p "$VIRAL_CONDA_ENV_PATH" viral-ngs || exit 1
                         fi
 
                     else
