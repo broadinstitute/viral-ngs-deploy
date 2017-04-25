@@ -38,7 +38,7 @@ if [ "$TEST_DOCKER" == "true" ]; then
 
     if [ -z "$UPSTREAM_TAG" ]; then
         # build the docker image, and try to run it
-        build_image=$(tar -czh . | docker build --rm -q -)
+        tar -czh . | docker build --rm - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
         echo "build_image: $build_image"
         docker run --rm $build_image illumina.py
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
