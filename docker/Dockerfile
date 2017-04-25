@@ -1,5 +1,6 @@
-FROM ubuntu:15.04
-MAINTAINER Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>
+FROM ubuntu:16.04
+
+LABEL maintainer "Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>"
 
 # to build:
 #   docker build --rm .
@@ -16,55 +17,68 @@ MAINTAINER Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>
 
 ARG VIRAL_NGS_VERSION
 
-# System packages 
-RUN apt-get update && apt-get upgrade
-RUN apt-get install -y curl bzip2 build-essential python wget 
-RUN apt-get install -y less nano
+# Silence some warnings about Readline. Checkout more over here:
+# https://github.com/phusion/baseimage-docker/issues/58
+ENV DEBIAN_FRONTEND noninteractive
 
-# Set the locale
-RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+##############################
+# System packages and locale
+##############################
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates wget curl bzip2 python less nano vim \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && locale-gen en_US.UTF-8
 
-# add a new user
-ENV DOCKER_USER viral-ngs-user
-RUN useradd -ms /bin/bash $DOCKER_USER
-USER $DOCKER_USER
-WORKDIR /home/$DOCKER_USER
+# Set default locale to en_US.UTF-8
+ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
 
-# shared volumes to make external GATK available within the container
-VOLUME ["/gatk"]
-ENV GATK_PATH /gatk
+# grab gosu for easy step-down from root
+ENV GOSU_VERSION 1.7
+RUN set -x \
+    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
+    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+    && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
+    && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
+    && chmod +x /usr/local/bin/gosu \
+    && gosu nobody true
 
-# shared volumes to make external Novoalign available within the container
-VOLUME ["/novoalign"]
-ENV NOVOALIGN_PATH /novoalign
+##############################
+# Prepare user and installation directory
+##############################
+ENV INSTALL_DIR="/opt/viral-ngs"
+RUN  mkdir -p $INSTALL_DIR
 
-# shared volumes to make external Novoalign available within the container
-VOLUME ["/user-data"]
-ENV VIRAL_NGS_DOCKER_DATA_PATH /user-data
+##############################
+# Volume setup
+##############################
+# make external tools and data available within the container
+VOLUME ["/gatk", "/novoalign", "/user-data"]
+ENV GATK_PATH="/gatk" NOVOALIGN_PATH="/novoalign" VIRAL_NGS_DOCKER_DATA_PATH="/user-data"
+# It's a wrapper script to load the viral-ngs environment via the easy-deploy script
+# and then run any commands desired
+# Put this up here to avoid long waiting time after heavier build layer below
+ADD ./env_wrapper.sh $INSTALL_DIR/env_wrapper.sh
+RUN chmod -R +x $INSTALL_DIR/env_wrapper.sh
 
-RUN ln -s /user-data /home/$DOCKER_USER/data
-
+##############################
+# Setup viral-ngs
+##############################
 # download and use the viral-ngs easy deploy script to install viral-ngs
 #RUN curl -LO https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh
-USER root
-ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh /home/$DOCKER_USER/easy-deploy-viral-ngs.sh
-RUN chmod +x ./easy-deploy-viral-ngs.sh
-RUN chown $DOCKER_USER:$DOCKER_USER ./easy-deploy-viral-ngs.sh
-USER $DOCKER_USER
+ADD ./easy-deploy-script/easy-deploy-viral-ngs.sh $INSTALL_DIR/easy-deploy-viral-ngs.sh
+RUN chmod +x $INSTALL_DIR/easy-deploy-viral-ngs.sh
+WORKDIR $INSTALL_DIR
+
 ENV VIRAL_NGS_VERSION $VIRAL_NGS_VERSION
 RUN echo "Running easy install with viral-ngs version $VIRAL_NGS_VERSION"
 RUN bash -c 'echo $(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 RUN bash -c '$(if [ "$VIRAL_NGS_VERSION" == "" ]; then echo "./easy-deploy-viral-ngs.sh setup"; else echo "./easy-deploy-viral-ngs.sh setup --viral-ngs-version $VIRAL_NGS_VERSION" ; fi)'
 
-# add a wrapper script to load the viral-ngs environment via the easy-deploy script
-# and then run any commands desired
-USER root
-ADD ./env_wrapper.sh /home/$DOCKER_USER/env_wrapper.sh
-RUN chmod +x ./env_wrapper.sh
-RUN chown $DOCKER_USER:$DOCKER_USER ./env_wrapper.sh
-USER $DOCKER_USER
+ENV DEBIAN_FRONTEND teletype
 
-ENTRYPOINT ["./env_wrapper.sh"]
+ENTRYPOINT ["/opt/viral-ngs/env_wrapper.sh"]
+CMD ["/bin/bash"]
