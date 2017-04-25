@@ -25,7 +25,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # System packages and locale
 ##############################
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates wget curl bzip2 python less nano vim \
+    && apt-get install -y --no-install-recommends ca-certificates wget curl bzip2 python less nano vim locales \
     && apt-get upgrade -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
