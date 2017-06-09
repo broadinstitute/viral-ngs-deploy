@@ -13,6 +13,12 @@ if [ "$TEST_EASY_INSTALL" == "true" ]; then
     /tmp/easy-deploy-viral-ngs.sh setup
 fi
 
+if [ "$TEST_EASY_INSTALL" == "git" ]; then
+    echo "Checking git install script..."
+    cp ./easy-deploy-script/easy-deploy-viral-ngs.sh /tmp/easy-deploy-viral-ngs.sh
+    /tmp/easy-deploy-viral-ngs.sh setup-git
+fi
+
 if [ "$TEST_EASY_INSTALL" == "long_prefix" ]; then
     echo "Checking easy install script with long path prefix..."
     echo "See: https://github.com/conda/conda-build/pull/877"
