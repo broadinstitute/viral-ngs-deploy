@@ -8,17 +8,21 @@ STARTING_DIR=$(pwd)
 # work regardless of whether or not this script has been sourced
 # Find original directory of bash script, resovling symlinks
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in/246128#246128
+function absolute_path() {
+    local SOURCE="$1"
+    while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+        DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            SOURCE="$(readlink "$SOURCE")"
+        else
+            SOURCE="$(readlink -f "$SOURCE")"
+        fi
+        [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    done
+    echo "$SOURCE"
+}
 SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        SOURCE="$(readlink "$SOURCE")"
-    else
-        SOURCE="$(readlink -f "$SOURCE")"
-    fi
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-SCRIPT=$SOURCE
+SCRIPT=$(absolute_path "$SOURCE")
 SCRIPT_DIRNAME="$(dirname "$SOURCE")"
 SCRIPTPATH="$(cd -P "$(echo $SCRIPT_DIRNAME)" &> /dev/null && pwd)"
 SCRIPT="$SCRIPTPATH/$(basename "$SCRIPT")"
@@ -33,7 +37,7 @@ PROJECTS_DIR="projects"
 MINICONDA_DIR="mc3"
 
 INSTALL_PATH="${VIRAL_NGS_INSTALL_PATH:-$SCRIPTPATH/$CONTAINING_DIR}"
-INSTALL_PATH=$(readlink -f $INSTALL_PATH)
+INSTALL_PATH=$(absolute_path "$INSTALL_PATH")
 
 VIRAL_CONDA_ENV_PATH="$INSTALL_PATH/$CONDA_ENV_BASENAME"
 PROJECTS_PATH="$INSTALL_PATH/$PROJECTS_DIR"
