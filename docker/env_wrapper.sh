@@ -19,7 +19,8 @@ useradd --shell /bin/bash --uid $USER_ID --gid $GROUP_ID -o -c "" -m $USER_NAME
 # PROJECTS_PATH="$SCRIPTPATH/$CONTAINING_DIR/$PROJECTS_DIR"
 export HOME=/home/$USER_NAME
 ln -s /user-data $HOME/data
-chown -R $USER_NAME:$GROUP_NAME /opt/viral-ngs
+# This is very slow and not really needed unless /opt/viral-ngs is mounted as a volume on the host
+#chown -R $USER_NAME:$GROUP_NAME /opt/viral-ngs
 
 # '-R' is not used here because the user running docker may not have chown -R permission to the whole
 # data directory
