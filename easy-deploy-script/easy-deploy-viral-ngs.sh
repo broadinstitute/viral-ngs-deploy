@@ -181,7 +181,7 @@ function install_miniconda(){
         else
             miniconda_url=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
-        wget --progress=dot $miniconda_url -O "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
+        wget -q $miniconda_url -O "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
         chmod +x "$INSTALL_PATH/Miniconda3-latest-x86_64.sh"
         "$INSTALL_PATH/Miniconda3-latest-x86_64.sh" -b -f -p "$MINICONDA_PATH"
 
@@ -232,9 +232,9 @@ function install_viral_ngs_git(){
     fi
 }
 
-function install_viral_ngs_conda_deps() {
-    conda install -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-conda.txt"
-    conda install -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-py3.txt"
+function install_viral_ngs_conda_dependencies() {
+    conda install -q -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-conda.txt" || exit 1
+    conda install -q -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-py3.txt" || exit 1
 }
 
 
@@ -491,7 +491,7 @@ else
 
                 if [[ "$1" == "setup-git" ]]; then
                     install_viral_ngs_git
-                    install_viral_ngs_conda_deps
+                    install_viral_ngs_conda_dependencies
                 else
                     install_viral_ngs_conda $@
                 fi
@@ -539,7 +539,7 @@ else
                exit 1
            fi
            activate_env
-           install_viral_ngs_conda_deps
+           install_viral_ngs_conda_dependencies
        ;;
        "upgrade")
             if [ $# -eq 1 ]; then
