@@ -27,7 +27,7 @@ SCRIPT_DIRNAME="$(dirname "$SOURCE")"
 SCRIPTPATH="$(cd -P "$(echo $SCRIPT_DIRNAME)" &> /dev/null && pwd)"
 SCRIPT="$SCRIPTPATH/$(basename "$SCRIPT")"
 
-CONDA_PREFIX_LENGTH_LIMIT=80
+CONDA_PREFIX_LENGTH_LIMIT=250
 
 CONTAINING_DIR="viral-ngs-etc"
 VIRAL_NGS_DIR="viral-ngs"
@@ -111,7 +111,7 @@ function set_locale(){
 
 function ask() {
     while true; do
- 
+
         if [ "${2:-}" = "Y" ]; then
             prompt="Y/n"
             default=Y
@@ -122,21 +122,21 @@ function ask() {
             prompt="y/n"
             default=
         fi
- 
+
         # Ask the question
         read -p "$1 [$prompt] " REPLY
- 
+
         # Default?
         if [ -z "$REPLY" ]; then
             REPLY=$default
         fi
- 
+
         # Check if the reply is valid
         case "$REPLY" in
             Y*|y*) echo " "; return 0 ;;
             N*|n*) echo " "; return 1 ;;
         esac
- 
+
     done
 }
 
@@ -295,11 +295,11 @@ function create_project(){
     pushd > /dev/null
 
     cp "$VIRAL_NGS_PATH/pipes/config.yaml" "$PROJECT_PATH"
-    ln -s "../../$VIRAL_NGS_DIR/pipes/Snakefile" "$PROJECT_PATH/Snakefile"
-    ln -s "../../$VIRAL_NGS_DIR/" "$PROJECT_PATH/bin"
-    ln -s "../../$CONDA_ENV_BASENAME/" "$PROJECT_PATH/conda-env"
-    ln -s "../../$MINICONDA_DIR/" "$PROJECT_PATH/mc3"
-    ln -s "../../$VIRAL_NGS_DIR/pipes/Broad_UGER/run-pipe.sh" "$PROJECT_PATH/run-pipe_UGER.sh"
+    ln -s "$VIRAL_NGS_PATH/pipes/Snakefile" "$PROJECT_PATH/Snakefile"
+    ln -s "$VIRAL_NGS_PATH" "$PROJECT_PATH/bin"
+    ln -s "$INSTALL_PATH/$CONDA_ENV_BASENAME" "$PROJECT_PATH/conda-env"
+    ln -s "$MINICONDA_PATH" "$PROJECT_PATH/mc3"
+    ln -s "$VIRAL_NGS_PATH/pipes/Broad_UGER/run-pipe.sh" "$PROJECT_PATH/run-pipe_UGER.sh"
     ln -s "run-pipe_UGER.sh" "$PROJECT_PATH/run-pipe.sh"
 
     cd "$starting_dir"
@@ -508,7 +508,7 @@ else
             install_tools
 
             echo "Setup complete. Do you want to start a project? Run:"
-            echo "$0 create-project <project_name>"
+            echo "$0 create-project <project_name> [/containing/path]"
             echo ""
        ;;
        "load")
@@ -623,18 +623,38 @@ else
             fi
        ;;
        "create-project")
-            if [ $# -ne 2 ]; then
-                echo "Usage: $(basename $SCRIPT) create-project <project_name>"
+            if [ $# -ne 2 -a $# -ne 3 ]; then
+                echo "Usage: $(basename $SCRIPT) create-project <project_name> [/containing/path]"
                 if [[ $sourced -eq 0 ]]; then
                     exit 1
                 else
                     return 1
                 fi
             else
-                if [ ! -d "$PROJECTS_PATH/$2" ]; then
-                    create_project $2 && echo "Project created: $PROJECTS_PATH/$2" && echo "OK"
+                # check for viral-ngs install; abort project creation if missing
+                if [ ! -d "$VIRAL_CONDA_ENV_PATH" ]; then
+                    echo "It looks like viral-ngs has not yet been installed."
+                    echo "Directory does not exist: $VIRAL_CONDA_ENV_PATH"
+                    echo "First run $(basename $SCRIPT) setup"
+                    if [[ $sourced -eq 0 ]]; then
+                        exit 1
+                    else
+                        return 1
+                    fi
+                fi
+                ORIGINAL_PROJECTS_PATH=$PROJECTS_PATH
+                PROJECT_NAME="$2"
+                if [ $# -eq 3 ]; then
+                    PROJECTS_PATH="$3"
+                    echo "Creating project in path: $PROJECTS_PATH/$PROJECT_NAME"
                 else
-                    echo "WARNING: $PROJECTS_PATH/$2/ already exists."
+                    echo "Creating project: $PROJECT_NAME"
+                fi
+
+                if [ ! -d "$PROJECTS_PATH/$PROJECT_NAME" ]; then
+                    create_project $PROJECT_NAME && echo "Project created: $PROJECTS_PATH/$PROJECT_NAME" && echo "OK"
+                else
+                    echo "WARNING: $PROJECTS_PATH/$PROJECT_NAME/ already exists."
                     echo "Skipping project creation."
                 fi
 
@@ -648,12 +668,13 @@ else
                     # if the viral-ngs environment is active and we have sourced this file
                     if [[ $sourced -eq 1 ]]; then
                         # change to the project directory
-                        if [ -d "$PROJECTS_PATH/$2" ]; then
-                            cd "$PROJECTS_PATH/$2"
+                        if [ -d "$PROJECTS_PATH/$PROJECT_NAME" ]; then
+                            cd "$PROJECTS_PATH/$PROJECT_NAME"
                         fi
                         return 0
                     fi
                 fi
+                PROJECTS_PATH=$ORIGINAL_PROJECTS_PATH
             fi
        ;;
        *)
