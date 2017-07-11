@@ -275,17 +275,17 @@ function install_tools(){
 }
 
 function create_project(){
-    echo "Populating project directory..."
+    echo "Checking and populating project directory..."
     # first arg is project folder name
     starting_dir=$(pwd)
 
     mkdir -p $PROJECTS_PATH
     PROJECT_PATH="$PROJECTS_PATH/$1"
-    mkdir "$PROJECT_PATH"
+    mkdir -p "$PROJECT_PATH"
     pushd "$PROJECT_PATH" > /dev/null
-    mkdir data log reports tmp
+    mkdir -p data log reports tmp
     pushd data > /dev/null
-    mkdir 00_raw 01_cleaned 01_per_sample 02_align_to_self 02_assembly 03_align_to_ref 03_interhost 04_intrahost
+    mkdir -p 00_raw 01_cleaned 01_per_sample 02_align_to_self 02_assembly 03_align_to_ref 03_interhost 04_intrahost
     popd > /dev/null
     touch samples-metagenomics.txt
     touch samples-depletion.txt
@@ -294,13 +294,33 @@ function create_project(){
     touch samples-assembly-failures.txt
     pushd > /dev/null
 
-    cp "$VIRAL_NGS_PATH/pipes/config.yaml" "$PROJECT_PATH"
-    ln -s "$VIRAL_NGS_PATH/pipes/Snakefile" "$PROJECT_PATH/Snakefile"
-    ln -s "$VIRAL_NGS_PATH" "$PROJECT_PATH/bin"
-    ln -s "$INSTALL_PATH/$CONDA_ENV_BASENAME" "$PROJECT_PATH/conda-env"
-    ln -s "$MINICONDA_PATH" "$PROJECT_PATH/mc3"
-    ln -s "$VIRAL_NGS_PATH/pipes/Broad_UGER/run-pipe.sh" "$PROJECT_PATH/run-pipe_UGER.sh"
-    ln -s "run-pipe_UGER.sh" "$PROJECT_PATH/run-pipe.sh"
+    if [ ! -e "$PROJECT_PATH/config.yaml" ]; then
+        cp "$VIRAL_NGS_PATH/pipes/config.yaml" "$PROJECT_PATH"
+    fi
+    if [ ! -L "$PROJECT_PATH/Snakefile" ]; then
+        ln -s "$VIRAL_NGS_PATH/pipes/Snakefile" "$PROJECT_PATH/Snakefile"
+    fi
+    
+    if [ ! -L "$PROJECT_PATH/bin" ]; then
+        ln -s "$VIRAL_NGS_PATH" "$PROJECT_PATH/bin"
+    fi
+
+    if [ ! -L "$PROJECT_PATH/conda-env" ]; then
+        ln -s "$INSTALL_PATH/$CONDA_ENV_BASENAME" "$PROJECT_PATH/conda-env"
+    fi
+
+    if [ ! -L "$PROJECT_PATH/mc3" ]; then
+        ln -s "$MINICONDA_PATH" "$PROJECT_PATH/mc3"
+    fi
+
+    if [ -z "$OMIT_UGER_PROJECT_FILES" ]; then
+        if [ ! -L "$PROJECT_PATH/run-pipe_UGER.sh" ]; then
+            ln -s "$VIRAL_NGS_PATH/pipes/Broad_UGER/run-pipe.sh" "$PROJECT_PATH/run-pipe_UGER.sh"
+        fi
+        if [ ! -L "$PROJECT_PATH/run-pipe.sh" ]; then
+            ln -s "run-pipe_UGER.sh" "$PROJECT_PATH/run-pipe.sh"
+        fi
+    fi
 
     cd "$starting_dir"
 }
@@ -651,12 +671,7 @@ else
                     echo "Creating project: $PROJECT_NAME"
                 fi
 
-                if [ ! -d "$PROJECTS_PATH/$PROJECT_NAME" ]; then
-                    create_project $PROJECT_NAME && echo "Project created: $PROJECTS_PATH/$PROJECT_NAME" && echo "OK"
-                else
-                    echo "WARNING: $PROJECTS_PATH/$PROJECT_NAME/ already exists."
-                    echo "Skipping project creation."
-                fi
+                create_project $PROJECT_NAME && echo "Project created: $PROJECTS_PATH/$PROJECT_NAME" && echo "OK"
 
                 echo ""
 
