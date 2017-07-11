@@ -31,6 +31,7 @@ env:
     - TEST_EASY_INSTALL=true
     - TEST_EASY_INSTALL=long_prefix
     - TEST_EASY_INSTALL=false
+    - TEST_EASY_INSTALL=git
 
 matrix:
   fast_finish: true
