@@ -26,7 +26,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ##############################
 # removing /var/lib/apt/lists/* frees some space
 RUN apt-get update \
-    && apt-get install -y -qq --no-install-recommends ca-certificates wget curl bzip2 python less nano vim locales gcc python-dev python-setuptools \
+    && apt-get install -y -qq --no-install-recommends ca-certificates wget rsync curl bzip2 python less nano vim locales gcc python-dev python-setuptools \
     && apt-get upgrade -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
