@@ -22,21 +22,21 @@ ARG VIRAL_NGS_VERSION
 ENV DEBIAN_FRONTEND noninteractive
 
 ##############################
-# System packages and locale
+# System packages, Google Cloud SDK, and locale
 ##############################
 # removing /var/lib/apt/lists/* frees some space
+# crcmod needed for Google Cloud SDK
+# 
 RUN apt-get update \
     && apt-get install -y -qq --no-install-recommends ca-certificates wget rsync curl bzip2 python less nano vim locales gcc python-dev python-setuptools \
     && apt-get upgrade -y \
+    && curl -sSL https://sdk.cloud.google.com | bash -s - "--install-dir=/opt" \
+    && easy_install -Uq pip \
+    && pip install -Uq crcmod \
+    && apt-get remove -y -qq gcc python-dev python-setuptools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8
-
-# Google Cloud SDK to support GS storage
-RUN curl -sSL https://sdk.cloud.google.com | bash -s - "--install-dir=/opt"
-ENV PATH $PATH:/opt/google-cloud-sdk/bin
-RUN easy_install -Uq pip
-RUN pip install -Uq crcmod
 
 # Set default locale to en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"

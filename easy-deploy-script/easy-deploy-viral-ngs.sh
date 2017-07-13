@@ -191,7 +191,6 @@ function install_miniconda(){
     if [ -d "$MINICONDA_PATH/bin" ]; then
         prepend_miniconda
         conda install -q -y -c defaults conda #==4.0.10
-        conda install -q -y -c defaults conda-build #==1.7.1
     else
         echo "It looks like the Miniconda installation failed"
         if [[ $sourced -eq 0 ]]; then
@@ -518,6 +517,8 @@ else
             else
                 echo "$VIRAL_CONDA_ENV_PATH/ already exists. Skipping conda env setup."
             fi
+
+            conda clean -y --all
 
             activate_env
 
