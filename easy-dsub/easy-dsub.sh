@@ -193,9 +193,11 @@ function updateSelf() {
   # Download new version
   echo -n "Downloading latest version..."
   if ! wget --quiet --output-document="$SCRIPT.tmp" "$1" ; then
-    echo "Error while trying to wget new version!"
-    echo "File requested: $SELF_UPDATE_URL"
-    exit 1
+    if ! curl -s "$1" -o "$SCRIPT.tmp" ; then
+      echo "Error while trying to wget new version!"
+      echo "File requested: $SELF_UPDATE_URL"
+      exit 1
+    fi
   fi
   echo "done."
 
@@ -356,7 +358,7 @@ case $? in
             echo "NUM_CORES is: $NUM_CORES"
             echo "DISK_SIZE is: $DISK_SIZE"
 
-            latest_viral_ngs="$(wget -q https://registry.hub.docker.com/v1/repositories/broadinstitute/viral-ngs/tags -O -  | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | grep '.' | tail -n 1)"
+            latest_viral_ngs="$(curl -s https://registry.hub.docker.com/v1/repositories/broadinstitute/viral-ngs/tags | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | grep '.' | tail -n 1)"
             echo "Using viral-ngs version $latest_viral_ngs"
             echo "Called locally; submitting job via dsub"
 
