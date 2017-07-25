@@ -111,10 +111,11 @@ function install_and_prepend_miniconda(){
 
         if [[ "$(python -c 'import os; print(os.uname()[0])')" == "Darwin" ]]; then
             miniconda_url=https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh
+            curl -s $miniconda_url -o "$INSTALL_PATH/Miniconda2-latest-x86_64.sh"
         else
             miniconda_url=https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+            wget -q $miniconda_url -O "$INSTALL_PATH/Miniconda2-latest-x86_64.sh"
         fi
-        wget -q $miniconda_url -O "$INSTALL_PATH/Miniconda2-latest-x86_64.sh"
         chmod +x "$INSTALL_PATH/Miniconda2-latest-x86_64.sh"
         "$INSTALL_PATH/Miniconda2-latest-x86_64.sh" -b -f -p "$MINICONDA_PATH"
 
