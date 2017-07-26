@@ -51,6 +51,7 @@ if [ "$TEST_DOCKER" == "true" ]; then
             docker run --rm $build_image illumina.py
         else
             echo "Docker build failed."
+            exit 1
         fi
     # if this was triggered by the upstream repo, build, tag, and push to Docker Hub
     else
@@ -64,6 +65,7 @@ if [ "$TEST_DOCKER" == "true" ]; then
             docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
         else
             echo "Docker build failed."
+            exit 1
         fi
     fi
 fi
