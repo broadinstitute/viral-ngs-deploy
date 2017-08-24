@@ -234,6 +234,7 @@ function install_viral_ngs_git(){
 function install_viral_ngs_conda_dependencies() {
     conda install -q -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-conda.txt" || exit 1
     conda install -q -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-py3.txt" || exit 1
+    conda install -q -c r -c bioconda -c conda-forge -c defaults --override-channels -y -p $VIRAL_CONDA_ENV_PATH --file "$VIRAL_NGS_PATH/requirements-conda-tests.txt" || exit 1
 }
 
 
