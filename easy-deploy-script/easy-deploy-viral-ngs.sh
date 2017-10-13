@@ -46,7 +46,7 @@ MINICONDA_PATH="$INSTALL_PATH/$MINICONDA_DIR"
 
 SELF_UPDATE_URL="https://raw.githubusercontent.com/broadinstitute/viral-ngs-deploy/master/easy-deploy-script/easy-deploy-viral-ngs.sh"
 
-CONDA_CHANNEL_STRING="-c r -c defaults -c conda-forge -c bioconda -c broad-viral"
+CONDA_CHANNEL_STRING="-c broad-viral -c bioconda -c conda-forge -c defaults -c r"
 
 # determine if this script has been sourced
 # via: http://stackoverflow.com/a/28776166/2328433
