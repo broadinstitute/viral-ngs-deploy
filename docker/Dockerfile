@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM phusion/baseimage:0.9.22
 
 LABEL maintainer "Chris Tomkins-Tinch <tomkinsc@broadinstitute.org>"
 
