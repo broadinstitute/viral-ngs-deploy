@@ -507,7 +507,7 @@ else
                 if [ "$1" == "setup-py2" ]; then
                     conda create -q $CONDA_CHANNEL_STRING --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=2 || exit 1
                 else
-                    conda create -q $CONDA_CHANNEL_STRING --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=3.5 || exit 1
+                    conda create -q $CONDA_CHANNEL_STRING --override-channels -y -p "$VIRAL_CONDA_ENV_PATH" python=3.6 || exit 1
                 fi
 
                 if [[ "$1" == "setup-git" ]]; then
