@@ -44,7 +44,7 @@ if [ "$TEST_DOCKER" == "true" ]; then
 
     if [ -z "$UPSTREAM_TAG" ]; then
         # build the docker image, and try to run it
-        tar -czh . | docker build --squash --rm - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
+        tar -czh . | docker build --rm - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
 
         if [[ ! -z $build_image ]]; then
             echo "build_image: $build_image"
@@ -58,10 +58,18 @@ if [ "$TEST_DOCKER" == "true" ]; then
         export REPO=broadinstitute/viral-ngs
         export TAG=$(if [ "$UPSTREAM_TAG" == "master" ]; then echo "latest"; else echo "$UPSTREAM_TAG" ; fi)
         export VIRAL_NGS_VERSION=$(echo "$UPSTREAM_TAG" | perl -lape 's/^v(.*)/$1/g') # strip 'v' prefix
-        tar -czh . | docker build --squash --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION" - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
+        tar -czh . | docker build --build-arg VIRAL_NGS_VERSION=$VIRAL_NGS_VERSION --rm -t "$REPO:$VIRAL_NGS_VERSION-build" - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
 
         if [[ ! -z $build_image ]]; then
             echo "build_image: $build_image"
+
+            # export and import to squash an image to one layer. 
+            # only containers can be exported, so we need to make a temp one
+            temp_container_id=$(docker create "$REPO:$VIRAL_NGS_VERSION-build")
+            docker export "$temp_container_id" | docker import - "$REPO:$VIRAL_NGS_VERSION-run-precursor"
+            echo "FROM $REPO:$VIRAL_NGS_VERSION-run-precursor"'
+                  ENTRYPOINT ["/opt/viral-ngs/env_wrapper.sh"]' | docker build -t "$REPO:$VIRAL_NGS_VERSION" - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
+
             docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
         else
             echo "Docker build failed."
