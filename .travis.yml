@@ -64,6 +64,7 @@ git:
 before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - docker --version
   - travis/before_install.sh
 
 install:
