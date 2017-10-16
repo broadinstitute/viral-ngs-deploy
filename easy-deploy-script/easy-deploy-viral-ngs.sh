@@ -92,6 +92,20 @@ if [ $? -ne 0 ]; then
     fi
 fi
 
+
+# Usage: puniq [<path>]
+# Remove duplicate entries from a PATH style value while retaining
+# the original order. Use PATH if no <path> is given.
+#
+# Example:
+#   $ puniq /usr/bin:/usr/local/bin:/usr/bin
+#   /usr/bin:/usr/local/bin
+puniq() {
+    echo ${1%:} |tr : '\n' |nl |sort -u -k 2,2 |sort -n |
+        cut -f 2- |tr '\n' : |sed -e 's/:$//' -e 's/^://'
+}
+
+
 function set_locale(){
     export LANG="$1"
     export LC_CTYPE="$1"
@@ -152,7 +166,8 @@ function prepend_miniconda(){
         echo "Miniconda installed."
 
         echo "Prepending miniconda to PATH..."
-        export PATH="$MINICONDA_PATH/bin:$PATH"
+        PATH="$MINICONDA_PATH/bin:$PATH"
+        export PATH=$(puniq $PATH)
         hash -r
 
         # update to the latest conda this way, since the shell script 
@@ -226,7 +241,12 @@ function install_viral_ngs_conda(){
 
 function install_viral_ngs_git(){
     if [ ! -L "$VIRAL_NGS_PATH" ]; then
-        git clone https://github.com/broadinstitute/viral-ngs.git "$VIRAL_NGS_PATH"
+        # First optional argument specifies non-master branch
+        if [[ $# -eq 1 ]]; then
+            git clone https://github.com/broadinstitute/viral-ngs.git --branch $1 "$VIRAL_NGS_PATH"
+        else
+            git clone https://github.com/broadinstitute/viral-ngs.git "$VIRAL_NGS_PATH"
+        fi
     else
         echo "$VIRAL_NGS_PATH/ symlink already exists. Skipping link."
     fi
@@ -333,8 +353,14 @@ function activate_env(){
         echo "viral-ngs parent directory not found: $INSTALL_PATH not found."
         echo "Have you run the setup?"
         echo "Usage: $0 setup"
-        cd $STARTING_DIR
+        cd "$STARTING_DIR"
         return 1
+    fi
+
+    # Add viral-ngs scripts to PATH for git-based installs
+    if [[ -d "$VIRAL_NGS_PATH/.git" ]]; then
+        PATH="$VIRAL_NGS_PATH:$PATH"
+        PATH=$(puniq $PATH)
     fi
 
     if [ -d "$VIRAL_CONDA_ENV_PATH" ]; then
@@ -365,7 +391,7 @@ function activate_env(){
         fi
     else
         echo "$VIRAL_CONDA_ENV_PATH/ does not exist. Exiting."
-        cd $STARTING_DIR
+        cd "$STARTING_DIR"
         return 1
     fi
 }
@@ -511,7 +537,7 @@ else
                 fi
 
                 if [[ "$1" == "setup-git" ]]; then
-                    install_viral_ngs_git
+                    install_viral_ngs_git $2
                     install_viral_ngs_conda_dependencies
                 else
                     install_viral_ngs_conda $@
