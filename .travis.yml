@@ -1,7 +1,7 @@
 language: python
 
 dist: trusty
-sudo: false
+sudo: true
 python: 
   - 3.6
 
@@ -62,6 +62,8 @@ git:
   depth: 3
 
 before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
   - travis/before_install.sh
 
 install:
