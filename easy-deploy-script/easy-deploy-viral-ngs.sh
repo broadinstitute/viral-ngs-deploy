@@ -261,7 +261,7 @@ function install_viral_ngs_conda_dependencies() {
 
 function install_tools(){
     # install tools
-    py.test $VIRAL_NGS_PATH/test/unit/test_tools.py
+    #pytest $VIRAL_NGS_PATH/test/unit/test_tools.py
 
     # get the version of gatk expected based on the installed conda package
     EXPECTED_GATK_VERSION=$(conda list | grep gatk | awk -F" " '{print $2}')
