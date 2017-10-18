@@ -48,7 +48,8 @@ if [ "$TEST_DOCKER" == "true" ]; then
 
         if [[ ! -z $build_image ]]; then
             echo "build_image: $build_image"
-            docker run --rm $build_image illumina.py
+            docker run $build_image illumina.py
+            docker run --rm $build_image gsutil --version
         else
             echo "Docker build failed."
             exit 1
@@ -70,7 +71,7 @@ if [ "$TEST_DOCKER" == "true" ]; then
             echo "FROM $REPO:$VIRAL_NGS_VERSION-run-precursor"'
                   ENTRYPOINT ["/opt/viral-ngs/env_wrapper.sh"]' | docker build -t "$REPO:$VIRAL_NGS_VERSION" - | tee >(grep "Successfully built" | perl -lape 's/^Successfully built ([a-f0-9]{12})$/$1/g' > build_id) | grep ".*" && build_image=$(head -n 1 build_id) && rm build_id
 
-            docker run --rm $build_image illumina.py && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
+            docker run $build_image illumina.py && docker run --rm $build_image gsutil --version && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" && docker push "$REPO:$VIRAL_NGS_VERSION"
         else
             echo "Docker build failed."
             exit 1
