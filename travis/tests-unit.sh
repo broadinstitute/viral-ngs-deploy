@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+set -e -x -o pipefail
 
 echo ""
 echo "UPSTREAM_BRANCH: $UPSTREAM_BRANCH"
