@@ -38,8 +38,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8
 
-ENV PATH $PATH:/opt/google-cloud-sdk/bin
-
 # Set default locale to en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
 

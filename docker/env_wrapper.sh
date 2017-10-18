@@ -26,6 +26,7 @@ ln -s /user-data $HOME/data
 # data directory
 chown $USER_NAME:$GROUP_NAME /user-data
 
+export PATH=$PATH:/opt/google-cloud-sdk/bin
 source /opt/viral-ngs/easy-deploy-viral-ngs.sh load
 cd $HOME/data
 
